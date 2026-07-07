@@ -114,9 +114,17 @@
         thunder: Array.isArray(nextState?.prizePools?.thunder) ? nextState.prizePools.thunder : base.prizePools.thunder
       },
       drawRecords: Array.isArray(nextState?.drawRecords) ? nextState.drawRecords : [],
-      journals: Array.isArray(nextState?.journals) ? nextState.journals : [],
-      photos: Array.isArray(nextState?.photos) ? nextState.photos : []
+      journals: normalizeCommentableItems(nextState?.journals),
+      photos: normalizeCommentableItems(nextState?.photos)
     };
+  }
+
+  function normalizeCommentableItems(items) {
+    if (!Array.isArray(items)) return [];
+    return items.map((item) => ({
+      ...item,
+      comments: Array.isArray(item.comments) ? item.comments : []
+    }));
   }
 
   function saveLocalState() {
@@ -271,7 +279,8 @@
       id: uid(),
       title,
       text,
-      createdAt: nowIso()
+      createdAt: nowIso(),
+      comments: []
     });
     state.journals = state.journals.slice(0, 120);
     $("#journalTitle").value = "";
@@ -307,6 +316,7 @@
         ${withActions ? `<button class="tiny-button" type="button" data-delete-journal="${item.id}">删除</button>` : ""}
       </header>
       <p>${escapeHtml(item.text)}</p>
+      ${withActions ? renderComments("journal", item) : ""}
     `;
     return card;
   }
@@ -314,6 +324,63 @@
   function deleteJournal(id) {
     state.journals = state.journals.filter((item) => item.id !== id);
     saveState();
+  }
+
+  function renderComments(type, item) {
+    const comments = Array.isArray(item.comments) ? item.comments : [];
+    const title = comments.length ? "追评" : "还没有追评";
+    return `
+      <section class="comment-box">
+        <div class="comment-title">${title}</div>
+        <div class="comment-list">
+          ${
+            comments.length
+              ? comments
+                  .map(
+                    (comment) => `
+                      <article class="comment-item">
+                        <p>${escapeHtml(comment.text)}</p>
+                        <span>${formatDate(comment.createdAt)}</span>
+                      </article>
+                    `
+                  )
+                  .join("")
+              : `<p class="comment-empty">可以补一句当时的想法</p>`
+          }
+        </div>
+        <form class="comment-form" data-comment-type="${type}" data-comment-id="${item.id}">
+          <input maxlength="80" placeholder="写一条追评" />
+          <button type="submit">发送</button>
+        </form>
+      </section>
+    `;
+  }
+
+  function addComment(type, id, text) {
+    const source = type === "photo" ? state.photos : state.journals;
+    const item = source.find((entry) => entry.id === id);
+    if (!item) return;
+
+    if (!Array.isArray(item.comments)) item.comments = [];
+    item.comments.push({
+      id: uid(),
+      text,
+      createdAt: nowIso()
+    });
+    saveState();
+  }
+
+  function handleCommentSubmit(event) {
+    const form = event.target.closest("[data-comment-type][data-comment-id]");
+    if (!form) return;
+    event.preventDefault();
+    event.stopPropagation();
+
+    const input = form.querySelector("input");
+    const text = input.value.trim();
+    if (!text) return;
+
+    addComment(form.dataset.commentType, form.dataset.commentId, text);
   }
 
   function getCurrentPhoto() {
@@ -401,8 +468,10 @@
           <h3>${escapeHtml(item.caption || "未命名照片")}</h3>
           <span class="meta">${formatDate(item.createdAt)} · ${item.source === "supabase" ? "云端" : "本地"}</span>
         </div>
+        ${renderComments("photo", item)}
       `;
-      card.addEventListener("click", () => {
+      card.addEventListener("click", (event) => {
+        if (event.target.closest(".comment-box")) return;
         currentPhotoId = item.id;
         render();
         setView("photos");
@@ -549,7 +618,8 @@
       url: data.publicUrl,
       caption,
       createdAt: nowIso(),
-      source: "supabase"
+      source: "supabase",
+      comments: []
     };
   }
 
@@ -562,7 +632,8 @@
           url: reader.result,
           caption,
           createdAt: nowIso(),
-          source: "local"
+          source: "local",
+          comments: []
         });
       };
       reader.onerror = () => reject(new Error("读取本地图片失败"));
@@ -668,6 +739,7 @@
       const id = event.target.dataset.deleteJournal;
       if (id) deleteJournal(id);
     });
+    $("#journalList").addEventListener("submit", handleCommentSubmit);
 
     $("#homeRefreshPhotoButton").addEventListener("click", pickRandomPhoto);
     $("#refreshPhotoButton").addEventListener("click", pickRandomPhoto);
@@ -678,6 +750,7 @@
       if (event.target.id === "photoPreview") closePhotoPreview();
     });
     $("#photoForm").addEventListener("submit", uploadPhoto);
+    $("#photoList").addEventListener("submit", handleCommentSubmit);
     $("#prizeForm").addEventListener("submit", savePrize);
     $("#resetPrizesButton").addEventListener("click", resetPrizes);
     $("#settingsPrizeList").addEventListener("click", (event) => {

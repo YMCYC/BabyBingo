@@ -370,6 +370,64 @@ textarea:focus {
   font-size: 16px;
 }
 
+.comment-box {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.comment-title {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.comment-list {
+  display: grid;
+  gap: 6px;
+}
+
+.comment-item {
+  padding: 9px 10px;
+  background: #fbf6f1;
+  border-radius: 8px;
+}
+
+.comment-item p,
+.comment-empty {
+  margin-bottom: 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.comment-item span {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.comment-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.comment-form input {
+  min-height: 38px;
+}
+
+.comment-form button {
+  min-width: 58px;
+  min-height: 38px;
+  padding: 0 12px;
+  color: #fff;
+  background: var(--ink);
+  border: 0;
+  border-radius: 8px;
+}
+
 .photo-preview {
   position: fixed;
   inset: 0;
