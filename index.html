@@ -174,6 +174,14 @@
       <article class="empty-state">还没有内容</article>
     </template>
 
+    <div class="photo-preview" id="photoPreview" hidden>
+      <img id="photoPreviewImage" alt="照片预览" />
+      <footer>
+        <p id="photoPreviewCaption"></p>
+        <button id="photoPreviewClose" type="button">关闭</button>
+      </footer>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="./supabase-config.js"></script>
     <script src="./app.js"></script>

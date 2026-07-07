@@ -350,8 +350,26 @@
     }
 
     image.src = photo.url;
+    image.dataset.photoId = photo.id;
     image.hidden = false;
     empty.hidden = true;
+  }
+
+  function openPhotoPreview(photo) {
+    if (!photo?.url) return;
+    $("#photoPreviewImage").src = photo.url;
+    $("#photoPreviewCaption").textContent = photo.caption || "未命名照片";
+    $("#photoPreview").hidden = false;
+  }
+
+  function openCurrentPhotoPreview(event) {
+    event?.stopPropagation();
+    openPhotoPreview(getCurrentPhoto());
+  }
+
+  function closePhotoPreview() {
+    $("#photoPreview").hidden = true;
+    $("#photoPreviewImage").removeAttribute("src");
   }
 
   function renderHomePhoto() {
@@ -653,6 +671,12 @@
 
     $("#homeRefreshPhotoButton").addEventListener("click", pickRandomPhoto);
     $("#refreshPhotoButton").addEventListener("click", pickRandomPhoto);
+    $("#homePhotoImage").addEventListener("click", openCurrentPhotoPreview);
+    $("#photoDetailImage").addEventListener("click", openCurrentPhotoPreview);
+    $("#photoPreviewClose").addEventListener("click", closePhotoPreview);
+    $("#photoPreview").addEventListener("click", (event) => {
+      if (event.target.id === "photoPreview") closePhotoPreview();
+    });
     $("#photoForm").addEventListener("submit", uploadPhoto);
     $("#prizeForm").addEventListener("submit", savePrize);
     $("#resetPrizesButton").addEventListener("click", resetPrizes);
