@@ -1,0 +1,19 @@
+{
+  "name": "BabyBingo",
+  "short_name": "BabyBingo",
+  "description": "两个人的抽奖、留言、积分兑换和生活小记 PWA。",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fff7ef",
+  "theme_color": "#fff6ef",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

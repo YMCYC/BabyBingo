@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#fff6ef" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="BabyBingo" />
+    <title>BabyBingo</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./icon.svg" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="app-header">
+        <div>
+          <p class="eyebrow">两个人的小互动</p>
+          <h1>BabyBingo</h1>
+        </div>
+        <button class="icon-button" id="installButton" type="button" title="安装到桌面" hidden>↓</button>
+      </header>
+
+      <main>
+        <section class="view is-active" data-view="home">
+          <section class="photo-hero" data-goto="photos">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">今日照片</p>
+                <h2 id="homePhotoTitle">随机展示一张照片</h2>
+              </div>
+              <button class="text-button" id="homeRefreshPhotoButton" type="button">换一张</button>
+            </div>
+            <div class="photo-detail-frame">
+              <img id="homePhotoImage" alt="随机生活照片" hidden />
+              <span id="homePhotoEmpty">照片墙还没有照片</span>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">今日手帐</p>
+                <h2>今天的小事</h2>
+              </div>
+              <button class="text-button" type="button" data-goto="journal">去写</button>
+            </div>
+            <div id="homeJournalList" class="timeline"></div>
+          </section>
+        </section>
+
+        <section class="view" data-view="draw">
+          <section class="draw-actions">
+            <button class="draw-card daily" type="button" data-draw-type="daily">
+              <span>日常小抽</span>
+              <strong>抽一点今天的小安排</strong>
+            </button>
+            <button class="draw-card romantic" type="button" data-draw-type="romantic">
+              <span>浪漫一抽</span>
+              <strong>抽一个甜甜互动</strong>
+            </button>
+            <button class="draw-card thunder" type="button" data-draw-type="thunder">
+              <span>雷霆大抽</span>
+              <strong>抽个有分量的奖励</strong>
+            </button>
+          </section>
+
+          <section class="panel draw-result-panel" id="drawResultPanel" hidden>
+            <p class="eyebrow">刚刚抽中</p>
+            <h2 id="drawResultTitle"></h2>
+            <p class="muted" id="drawResultDesc"></p>
+          </section>
+
+          <section class="panel">
+            <div class="section-head">
+              <h2>抽奖记录</h2>
+              <span class="badge" id="drawRecordCount">0 条</span>
+            </div>
+            <div class="item-list" id="drawRecordList"></div>
+          </section>
+        </section>
+
+        <section class="view" data-view="journal">
+          <section class="panel">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">小手帐</p>
+                <h2>写下今天</h2>
+              </div>
+              <span class="badge" id="journalCount">0 篇</span>
+            </div>
+            <form class="stack-form" id="journalForm">
+              <input id="journalTitle" maxlength="28" placeholder="标题，比如：晚饭后散步" />
+              <textarea id="journalText" rows="6" maxlength="520" placeholder="今天有什么想记下来的？"></textarea>
+              <button class="primary-button" type="submit">保存手帐</button>
+            </form>
+          </section>
+          <div class="item-list" id="journalList"></div>
+        </section>
+
+        <section class="view" data-view="photos">
+          <section class="panel">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">照片墙</p>
+                <h2>随机小相册</h2>
+              </div>
+              <button class="text-button" id="refreshPhotoButton" type="button">换一张</button>
+            </div>
+            <div class="photo-detail-frame">
+              <img id="photoDetailImage" alt="照片墙随机展示" hidden />
+              <span id="photoDetailEmpty">还没有照片，先上传一张</span>
+            </div>
+            <p class="muted" id="photoSyncStatus">正在连接 Supabase...</p>
+          </section>
+
+          <section class="panel">
+            <div class="section-head">
+              <h2>上传照片</h2>
+              <span class="badge" id="photoCount">0 张</span>
+            </div>
+            <form class="stack-form" id="photoForm">
+              <input id="photoFile" type="file" accept="image/*" />
+              <input id="photoCaption" maxlength="36" placeholder="照片内容，比如：第一次一起看海" />
+              <button class="primary-button" id="photoUploadButton" type="submit">上传照片</button>
+            </form>
+          </section>
+
+          <div class="item-list" id="photoList"></div>
+        </section>
+
+        <section class="view" data-view="settings">
+          <section class="panel">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">设置</p>
+                <h2>管理抽奖奖池</h2>
+              </div>
+            </div>
+            <form class="stack-form" id="prizeForm">
+              <select id="prizeType">
+                <option value="daily">日常小抽</option>
+                <option value="romantic">浪漫一抽</option>
+                <option value="thunder">雷霆大抽</option>
+              </select>
+              <input id="prizeTitle" maxlength="28" placeholder="奖项名称" />
+              <input id="prizeDesc" maxlength="80" placeholder="奖项说明" />
+              <button class="primary-button" type="submit">加入奖池</button>
+            </form>
+          </section>
+
+          <section class="panel">
+            <div class="section-head">
+              <h2>当前奖池</h2>
+              <button class="text-button" id="resetPrizesButton" type="button">恢复默认</button>
+            </div>
+            <div class="item-list" id="settingsPrizeList"></div>
+          </section>
+        </section>
+      </main>
+
+      <nav class="tabbar" aria-label="主导航">
+        <button class="tab is-active" type="button" data-tab="home">首页</button>
+        <button class="tab" type="button" data-tab="draw">抽抽奖</button>
+        <button class="tab" type="button" data-tab="journal">小手帐</button>
+        <button class="tab" type="button" data-tab="photos">照片墙</button>
+        <button class="tab" type="button" data-tab="settings">设置</button>
+      </nav>
+    </div>
+
+    <template id="emptyTemplate">
+      <article class="empty-state">还没有内容</article>
+    </template>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./supabase-config.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
